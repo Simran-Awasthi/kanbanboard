@@ -6,27 +6,17 @@ import { useMemo, useState } from "react";
 
 import TaskCard from "./TaskCard";
 import { PlusIcon, TrashIcon } from "lucide-react";
+import useKanbanStore from "@/lib/store";
 
 interface Props {
   column: Column;
-  deleteColumn: (id: Id) => void;
-  updateColumn: (id: Id, title: string) => void;
-
   createTask: (columnId: Id) => void;
-  updateTask: (id: Id, content: string) => void;
-  deleteTask: (id: Id) => void;
   tasks: Task[];
 }
 
-function ColumnContainer({
-  column,
-  deleteColumn,
-  updateColumn,
-  createTask,
-  tasks,
-  deleteTask,
-  updateTask,
-}: Props) {
+function ColumnContainer({ column, createTask, tasks }: Props) {
+  const { updateColumn, deleteColumn, updateTask, deleteTask } =
+    useKanbanStore();
   const [editMode, setEditMode] = useState(false);
 
   const tasksIds = useMemo(() => {
@@ -70,8 +60,7 @@ function ColumnContainer({
       rounded-md
       flex
       flex-col
-      "
-      ></div>
+      "></div>
     );
   }
 
@@ -87,8 +76,7 @@ function ColumnContainer({
   rounded-md
   flex
   flex-col
-  "
-    >
+  ">
       {/* Column title */}
       <div
         {...attributes}
@@ -96,36 +84,10 @@ function ColumnContainer({
         onClick={() => {
           setEditMode(true);
         }}
-        className="
-      bg-mainBackgroundColor
-      text-md
-      h-[60px]
-      cursor-grab
-      rounded-md
-      rounded-b-none
-      p-3
-      font-bold
-      border-columnBackgroundColor
-      border-4
-      flex
-      items-center
-      justify-between
-      "
-      >
+        className="bg-mainBackgroundColor text-md h-[60px] cursor-grab rounded-md rounded-b-none p-3 font-bold border-columnBackgroundColor border-4 flex items-center justify-between">
         <div className="flex gap-2">
-          <div
-            className="
-        flex
-        justify-center
-        items-center
-        bg-columnBackgroundColor
-        px-2
-        py-1
-        text-sm
-        rounded-full
-        "
-          >
-            0
+          <div className="flex justify-center items-center bg-columnBackgroundColor px-2 py-1 text-sm rounded-full">
+            {tasks.filter((task) => task.columnId === column.id).length}
           </div>
           {!editMode && column.title}
           {editMode && (
@@ -155,8 +117,7 @@ function ColumnContainer({
         rounded
         px-1
         py-2
-        "
-        >
+        ">
           <TrashIcon />
         </button>
       </div>
@@ -165,12 +126,7 @@ function ColumnContainer({
       <div className="flex flex-grow flex-col gap-4 p-2 overflow-x-hidden overflow-y-auto">
         <SortableContext items={tasksIds}>
           {tasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              deleteTask={deleteTask}
-              updateTask={updateTask}
-            />
+            <TaskCard key={task.id} task={task} />
           ))}
         </SortableContext>
       </div>
@@ -179,8 +135,7 @@ function ColumnContainer({
         className="flex gap-2 items-center border-columnBackgroundColor border-2 rounded-md p-4 border-x-columnBackgroundColor hover:bg-mainBackgroundColor hover:text-rose-500 active:bg-black"
         onClick={() => {
           createTask(column.id);
-        }}
-      >
+        }}>
         <PlusIcon />
         Add task
       </button>

@@ -1,19 +1,22 @@
-import { useState } from "react";
+import { ElementType, useState } from "react";
 
 import { Id, Task } from "./types";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { TrashIcon } from "lucide-react";
+import useKanbanStore from "@/lib/store";
+import { type } from "os";
+import TaskView from "./TaskView";
+import { format } from "date-fns/esm";
 
 interface Props {
   task: Task;
-  deleteTask: (id: Id) => void;
-  updateTask: (id: Id, content: string) => void;
 }
 
-function TaskCard({ task, deleteTask, updateTask }: Props) {
+function TaskCard({ task }: Props) {
+  const { updateTask, deleteTask } = useKanbanStore();
   const [mouseIsOver, setMouseIsOver] = useState(false);
-  const [editMode, setEditMode] = useState(true);
+  const [editMode, setEditMode] = useState(false);
 
   const {
     setNodeRef,
@@ -36,11 +39,6 @@ function TaskCard({ task, deleteTask, updateTask }: Props) {
     transform: CSS.Transform.toString(transform),
   };
 
-  const toggleEditMode = () => {
-    setEditMode((prev) => !prev);
-    setMouseIsOver(false);
-  };
-
   if (isDragging) {
     return (
       <div
@@ -49,36 +47,8 @@ function TaskCard({ task, deleteTask, updateTask }: Props) {
         className="
         opacity-30
       bg-mainBackgroundColor p-2.5 h-[100px] min-h-[100px] items-center flex text-left rounded-xl border-2 border-rose-500  cursor-grab relative
-      "
-      />
-    );
-  }
-
-  if (editMode) {
-    return (
-      <div
-        ref={setNodeRef}
-        style={style}
-        {...attributes}
-        {...listeners}
-        className="bg-mainBackgroundColor p-2.5 h-[100px] min-h-[100px] items-center flex text-left rounded-xl hover:ring-2 hover:ring-inset hover:ring-rose-500 cursor-grab relative"
-      >
-        <textarea
-          className="
-        h-[90%]
-        w-full resize-none border-none rounded bg-transparent text-white focus:outline-none
-        "
-          value={task.content}
-          autoFocus
-          placeholder="Task content here"
-          onBlur={toggleEditMode}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && e.shiftKey) {
-              toggleEditMode();
-            }
-          }}
-          onChange={(e) => updateTask(task.id, e.target.value)}
-        />
+      ">
+        {task.title}
       </div>
     );
   }
@@ -89,28 +59,30 @@ function TaskCard({ task, deleteTask, updateTask }: Props) {
       style={style}
       {...attributes}
       {...listeners}
-      onClick={toggleEditMode}
-      className="bg-mainBackgroundColor p-2.5 h-[100px] min-h-[100px] items-center flex text-left rounded-xl hover:ring-2 hover:ring-inset hover:ring-rose-500 cursor-grab relative task"
+      className="bg-mainBackgroundColor p-2.5 items-start flex flex-col gap-2 text-left rounded-xl hover:ring-2 hover:ring-inset hover:ring-rose-500 cursor-grab relative task"
       onMouseEnter={() => {
         setMouseIsOver(true);
       }}
       onMouseLeave={() => {
         setMouseIsOver(false);
-      }}
-    >
-      <p className="my-auto h-[90%] w-full overflow-y-auto overflow-x-hidden whitespace-pre-wrap">
-        {task.content}
-      </p>
-
+      }}>
+      {task.dueDate && (
+        <span className="bg-orange-400 px-2 rounded-md text-xs">
+          Due on: {format(new Date(task.dueDate), "dd MMM, yyyy")}
+        </span>
+      )}
+      <p className="my-auto w-full">{task.title}</p>
+      {task.description && (
+        <p className="my-auto h-[90%] w-full overflow-y-auto overflow-x-hidden whitespace-pre-wrap text-gray-400">
+          {task.description.substring(0, 100)}
+        </p>
+      )}
       {mouseIsOver && (
-        <button
-          onClick={() => {
-            deleteTask(task.id);
-          }}
-          className="stroke-white absolute right-4 top-1/2 -translate-y-1/2 bg-columnBackgroundColor p-2 rounded opacity-60 hover:opacity-100"
-        >
-          <TrashIcon />
-        </button>
+        <TaskView
+          editMode={editMode}
+          setEditMode={(mode) => setEditMode(mode)}
+          task={task}
+        />
       )}
     </div>
   );

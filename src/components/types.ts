@@ -1,15 +1,19 @@
-export type Id = string | number;
+export type Id = string;
 
 export type Column = {
   id: Id;
   title: string;
+  boardId: Id;
 };
 
 export type Task = {
   id: Id;
   columnId: Id;
-  content: string;
+  title: string;
+  description?: string;
+  dueDate?: Date;
 };
+
 export type Board = {
   id: Id;
   title: string;

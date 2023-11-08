@@ -6,5 +6,5 @@ export function cn(...inputs: ClassValue[]) {
 }
 export function generateId() {
   /* Generate a random number between 0 and 10000 */
-  return Math.floor(Math.random() * 10001);
+  return `${Math.floor(Math.random() * 10001)}`;
 }
